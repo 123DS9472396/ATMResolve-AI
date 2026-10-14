@@ -1,0 +1,46 @@
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+.streamlit/
+
+# Local generated data and model artifacts
+data/synthetic/*
+!data/synthetic/.gitkeep
+data/banking77_train.csv
+data/banking77_test.csv
+data/chroma/
+data/*.db
+data/*.db-shm
+data/*.db-wal
+artifacts/*
+!artifacts/.gitkeep
+
+# IDE files
+.vscode/
+.idea/
+# Additional secrets and local-only data
+.env.*
+!.env.example
+*.log
+*.bak
+data/indian_bank_complaints.csv
+data/atm_charge_review_queue.csv
+data/atm_charge_review_summary.json
+
+# Keep lightweight evaluation reports, but not binary model files
+!artifacts/ml/
+artifacts/ml/*
+!artifacts/ml/*.json
+!artifacts/ml/*.csv
+artifacts/ml/*.joblib
+artifacts/ml/*.pkl
+artifacts/ml/*.pt
+artifacts/ml/*.pth
+artifacts/ml/*.onnx
+artifacts/ml/*.h5

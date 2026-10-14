@@ -1,0 +1,11 @@
+{
+  "dataset": "PolyAI/BANKING77",
+  "train_rows": 10003,
+  "test_rows": 3080,
+  "n_train_labels": 77,
+  "accuracy": 0.887987012987013,
+  "macro_f1": 0.8884739184079462,
+  "model": "TF-IDF(1,2) + LogisticRegression",
+  "model_path": "C:\\Users\\admin\\Desktop\\ATMResolve_AI_Consolidated\\atmresolve-ai\\artifacts\\ml\\intent_classifier.joblib",
+  "note": "Metrics measured on official dataset test split. Not a guarantee of performance on Indian ATM complaint data."
+}

@@ -1,0 +1,87 @@
+{
+  "DEPOSIT-SB/ CA/TERM DEPOSIT ACCOUNTS-Dispute in charges deducted": {
+    "precision": 0.9150943396226415,
+    "recall": 0.9150943396226415,
+    "f1-score": 0.9150943396226415,
+    "support": 106.0
+  },
+  "DEPOSIT-SB/ CA/TERM DEPOSIT ACCOUNTS-Minimum Balance Charges related": {
+    "precision": 0.9739130434782609,
+    "recall": 0.9572649572649573,
+    "f1-score": 0.9655172413793104,
+    "support": 117.0
+  },
+  "DIGITAL BANKING-ATM RELATED-Dispute in ATM AMC Charges": {
+    "precision": 0.9753086419753086,
+    "recall": 1.0,
+    "f1-score": 0.9875,
+    "support": 158.0
+  },
+  "DIGITAL BANKING-FUND REMITTANCE: NEFT/ RTGS/ IMPS through Branch-Dispute in charges deducted": {
+    "precision": 0.9803921568627451,
+    "recall": 0.9900990099009901,
+    "f1-score": 0.9852216748768473,
+    "support": 101.0
+  },
+  "LOANS & ADVANCES-Education Loans-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)": {
+    "precision": 1.0,
+    "recall": 0.9915254237288136,
+    "f1-score": 0.9957446808510638,
+    "support": 118.0
+  },
+  "LOANS & ADVANCES-Govt Scheme loans-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)": {
+    "precision": 1.0,
+    "recall": 0.9917355371900827,
+    "f1-score": 0.995850622406639,
+    "support": 121.0
+  },
+  "LOANS & ADVANCES-Home loans-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)": {
+    "precision": 0.9932885906040269,
+    "recall": 0.9932885906040269,
+    "f1-score": 0.9932885906040269,
+    "support": 149.0
+  },
+  "LOANS & ADVANCES-OTHER ADVANCES-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)": {
+    "precision": 1.0,
+    "recall": 0.991304347826087,
+    "f1-score": 0.9956331877729258,
+    "support": 115.0
+  },
+  "LOANS & ADVANCES-Personal loans-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 126.0
+  },
+  "LOANS & ADVANCES-SME ADVANCES-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)": {
+    "precision": 0.9910714285714286,
+    "recall": 1.0,
+    "f1-score": 0.9955156950672646,
+    "support": 111.0
+  },
+  "LOANS & ADVANCES-VEHICLE LOANS-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)": {
+    "precision": 1.0,
+    "recall": 0.990909090909091,
+    "f1-score": 0.9954337899543378,
+    "support": 110.0
+  },
+  "Others": {
+    "precision": 0.9722222222222222,
+    "recall": 0.9722222222222222,
+    "f1-score": 0.9722222222222222,
+    "support": 36.0
+  },
+  "accuracy": 0.9846491228070176,
+  "macro avg": {
+    "precision": 0.9834408686113861,
+    "recall": 0.9827869599390758,
+    "f1-score": 0.98308517039644,
+    "support": 1368.0
+  },
+  "weighted avg": {
+    "precision": 0.98470404088715,
+    "recall": 0.9846491228070176,
+    "f1-score": 0.9846428945152775,
+    "support": 1368.0
+  }
+}

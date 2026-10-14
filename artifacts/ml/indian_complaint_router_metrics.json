@@ -1,0 +1,68 @@
+{
+  "task": "broad 12-label Indian banking grievance routing (not fine-grained ATM classification)",
+  "source": "KunalEsM/bank_complaint_classifier combined_data.csv",
+  "original_rows_after_basic_validation": 6957,
+  "conflicting_normalized_text_groups_excluded": 1,
+  "rows_after_conflict_exclusion_before_deduplication": 6953,
+  "duplicate_rows_removed_after_conflict_exclusion": 116,
+  "clean_unique_rows": 6837,
+  "train_rows": 4375,
+  "validation_rows": 1094,
+  "test_rows": 1368,
+  "label_count": 12,
+  "labels": [
+    "DEPOSIT-SB/ CA/TERM DEPOSIT ACCOUNTS-Dispute in charges deducted",
+    "DEPOSIT-SB/ CA/TERM DEPOSIT ACCOUNTS-Minimum Balance Charges related",
+    "DIGITAL BANKING-ATM RELATED-Dispute in ATM AMC Charges",
+    "DIGITAL BANKING-FUND REMITTANCE: NEFT/ RTGS/ IMPS through Branch-Dispute in charges deducted",
+    "LOANS & ADVANCES-Education Loans-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)",
+    "LOANS & ADVANCES-Govt Scheme loans-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)",
+    "LOANS & ADVANCES-Home loans-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)",
+    "LOANS & ADVANCES-OTHER ADVANCES-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)",
+    "LOANS & ADVANCES-Personal loans-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)",
+    "LOANS & ADVANCES-SME ADVANCES-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)",
+    "LOANS & ADVANCES-VEHICLE LOANS-Discrepancy in Charges (Processing Fee/Documentation charges, Inspection charges, etc)",
+    "Others"
+  ],
+  "validation_candidates": [
+    {
+      "C": 1.0,
+      "accuracy": 0.9881170018281535,
+      "macro_f1": 0.9884687782926352,
+      "weighted_f1": 0.9881406137637243
+    },
+    {
+      "C": 2.0,
+      "accuracy": 0.9899451553930531,
+      "macro_f1": 0.9901190880955881,
+      "weighted_f1": 0.9899727664362622
+    },
+    {
+      "C": 4.0,
+      "accuracy": 0.9908592321755028,
+      "macro_f1": 0.9910213083636471,
+      "weighted_f1": 0.9908724729710859
+    },
+    {
+      "C": 8.0,
+      "accuracy": 0.9917733089579525,
+      "macro_f1": 0.9919457222073724,
+      "weighted_f1": 0.9917691471063721
+    }
+  ],
+  "selected_C_by_validation_macro_f1": 8.0,
+  "test_metrics": {
+    "accuracy": 0.9846491228070176,
+    "macro_f1": 0.98308517039644,
+    "weighted_f1": 0.9846428945152775
+  },
+  "test_multiclass_brier_score": 0.027391134036960658,
+  "calibration": "sigmoid CalibratedClassifierCV, cv=3, fitted only on train+validation split",
+  "model_path": "C:\\Users\\admin\\Desktop\\ATMResolve_AI_Consolidated\\atmresolve-ai\\artifacts\\ml\\indian_complaint_router.joblib",
+  "critical_limitations": [
+    "The dataset contains templated/synthetic-looking text; provenance does not establish real customer representativeness.",
+    "Exact duplicate and conflicting-label leakage is addressed, but near-duplicate template leakage may remain.",
+    "Test metrics estimate performance on this dataset distribution only; do not claim them as real Indian customer or ATM failure accuracy.",
+    "This model's 12 broad complaint labels must not replace the 77-label BANKING77 model or the future fine-grained ATM model."
+  ]
+}

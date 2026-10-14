@@ -1,0 +1,27 @@
+{
+  "training_data": "PolyAI/BANKING77 official training split",
+  "test_data": "PolyAI/BANKING77 official test split",
+  "model_selected_using": "20% stratified validation split from official training split",
+  "validation_results": {
+    "word_tfidf_logistic_regression": {
+      "accuracy": 0.8725637181409296,
+      "macro_f1": 0.8743252848148071,
+      "weighted_f1": 0.8726856094379657
+    },
+    "word_plus_character_tfidf_logistic_regression": {
+      "accuracy": 0.9045477261369316,
+      "macro_f1": 0.9062102289234417,
+      "weighted_f1": 0.9047616365123591
+    }
+  },
+  "selected_model": "word_plus_character_tfidf_logistic_regression",
+  "calibration": "CalibratedClassifierCV(method='sigmoid', cv=3) fit on official training split",
+  "test_rows": 3080,
+  "test_classes": 77,
+  "accuracy": 0.9058441558441559,
+  "macro_f1": 0.9054171646061299,
+  "weighted_f1": 0.9054171646061302,
+  "multiclass_brier_score": 0.20450230206618455,
+  "model_path": "C:\\Users\\admin\\Desktop\\ATMResolve_AI_Consolidated\\atmresolve-ai\\artifacts\\ml\\intent_classifier_v2_calibrated.joblib",
+  "important_limit": "These are English BANKING77 metrics. Calibration is measured for this distribution; it does not establish calibrated confidence on Indian-English, Hinglish, Marathi, or ATM-specific customer complaints."
+}
