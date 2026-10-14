@@ -1,10 +1,16 @@
 from __future__ import annotations
+import logging
+import sqlite3
 import uuid
+import httpx
 from fastapi import FastAPI, HTTPException
 from api.models import CaseCreate, ReviewRequest, PolicySearchRequest
 from src.storage.repository import init_db, create_case, get_case, list_cases, list_case_events, list_approvals, get_transaction, list_transactions
 from src.agents.graph import start_investigation, resume_investigation
 from src.rag.retrieve import retrieve_policy
+from src.config import APPLICATION_DB_PATH, OLLAMA_BASE_URL, VECTOR_DB_PATH
+
+log = logging.getLogger(__name__)
 
 app = FastAPI(title="ATMResolve AI API", version="0.1.0", description="Local synthetic ATM dispute investigation prototype; not a real banking system.")
 
@@ -14,7 +20,48 @@ def startup() -> None:
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "mode": "local_synthetic_demo"}
+    """Return the availability status of each application component.
+
+    Returns HTTP 200 regardless of component status so that load-balancers can
+    reach the endpoint. The caller must inspect the per-component ``status``
+    fields; the top-level ``status`` is ``degraded`` if any component is
+    unhealthy.
+    """
+    components: dict[str, dict] = {}
+
+    # 1. Application database (SQLite)
+    try:
+        conn = sqlite3.connect(APPLICATION_DB_PATH, timeout=3)
+        conn.execute("SELECT COUNT(*) FROM sqlite_master")
+        conn.close()
+        components["database"] = {"status": "ok", "path": str(APPLICATION_DB_PATH)}
+    except Exception as exc:
+        components["database"] = {"status": "error", "detail": str(exc)}
+
+    # 2. Ollama (local LLM + embeddings)
+    try:
+        with httpx.Client(timeout=httpx.Timeout(3.0)) as client:
+            resp = client.get(f"{OLLAMA_BASE_URL}/api/tags")
+        if resp.status_code == 200:
+            components["ollama"] = {"status": "ok", "base_url": OLLAMA_BASE_URL}
+        else:
+            components["ollama"] = {"status": "error", "detail": f"HTTP {resp.status_code}", "base_url": OLLAMA_BASE_URL}
+    except Exception as exc:
+        components["ollama"] = {"status": "error", "detail": str(exc), "base_url": OLLAMA_BASE_URL}
+
+    # 3. Chroma vector store
+    chroma_marker = VECTOR_DB_PATH / "chroma.sqlite3"
+    if VECTOR_DB_PATH.exists() and chroma_marker.exists():
+        components["chroma"] = {"status": "ok", "path": str(VECTOR_DB_PATH)}
+    elif VECTOR_DB_PATH.exists():
+        components["chroma"] = {"status": "not_ingested", "detail": "Chroma directory exists but index not initialised. Run: python -m src.rag.ingest"}
+    else:
+        components["chroma"] = {"status": "error", "detail": "Chroma directory not found. Run: python -m src.rag.ingest"}
+
+    overall = "ok" if all(c["status"] == "ok" for c in components.values()) else "degraded"
+    if overall == "degraded":
+        log.warning("health_check status=degraded components=%s", {k: v["status"] for k, v in components.items()})
+    return {"status": overall, "mode": "local_synthetic_demo", "components": components}
 
 @app.get("/transactions")
 def transactions():

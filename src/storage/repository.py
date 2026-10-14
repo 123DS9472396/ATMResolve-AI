@@ -1,11 +1,14 @@
 from __future__ import annotations
 import json
+import logging
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from src.config import APPLICATION_DB_PATH
+
+log = logging.getLogger(__name__)
 
 
 def now_iso() -> str:
@@ -17,6 +20,7 @@ def get_connection():
     conn = sqlite3.connect(APPLICATION_DB_PATH, timeout=15)
     conn.row_factory = sqlite3.Row
     try:
+        conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA foreign_keys=ON")
         yield conn
         conn.commit()

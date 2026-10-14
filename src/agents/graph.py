@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import logging
 from typing import Any
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import interrupt, Command
@@ -13,6 +14,8 @@ from src.rules.dispute_rules import investigate_evidence
 from src.storage.repository import update_case, log_case_event, save_approval
 from src.tools.transaction_lookup import lookup_transaction
 from src.tools.atm_status import get_atm_status_events
+
+log = logging.getLogger(__name__)
 
 
 def _event(state: InvestigationState, stage: str, name: str, details: dict[str, Any] | None = None) -> None:
@@ -31,21 +34,31 @@ def classify_intent(state: InvestigationState) -> dict:
         prediction = predict_intent(state["complaint_text"])
         label = prediction["intent_label"]
         score = prediction["confidence_score"]
+        calibrated = bool(prediction.get("confidence_is_calibrated", False))
         update_case(state["case_id"], intent_label=label, intent_confidence=score)
-        _event(state, "classification", "intent_predicted", {"intent_label": label, "confidence_score": score, "score_is_calibrated": False})
+        _event(state, "classification", "intent_predicted", {
+            "intent_label": label,
+            "confidence_score": score,
+            "score_is_calibrated": calibrated,
+        })
+        log.info("case=%s intent=%s score=%.4f calibrated=%s", state["case_id"], label, score, calibrated)
         return {"intent_label": label, "intent_confidence": score}
     except Exception as exc:
         message = f"Classifier unavailable: {type(exc).__name__}: {exc}"
+        log.warning("case=%s %s", state["case_id"], message)
         _event(state, "classification", "classifier_unavailable", {"error": message})
         return {"intent_label": "unavailable", "intent_confidence": 0.0, "errors": state.get("errors", []) + [message]}
+
 
 def retrieve_policy_node(state: InvestigationState) -> dict:
     try:
         docs = retrieve_policy(state["complaint_text"] + " " + state.get("intent_label", ""), k=4)
         _event(state, "rag", "policy_retrieved", {"count": len(docs), "sources": [d.get("source_url") for d in docs]})
+        log.info("case=%s rag_docs_retrieved=%d", state["case_id"], len(docs))
         return {"retrieved_policy": docs}
     except Exception as exc:
         message = f"Policy retrieval unavailable: {type(exc).__name__}: {exc}"
+        log.warning("case=%s %s", state["case_id"], message)
         _event(state, "rag", "retrieval_failed", {"error": message})
         return {"retrieved_policy": [], "errors": state.get("errors", []) + [message]}
 
@@ -53,6 +66,7 @@ def lookup_evidence(state: InvestigationState) -> dict:
     txn = lookup_transaction(state["transaction_id"])
     events = get_atm_status_events(state["transaction_id"])
     _event(state, "evidence", "mock_evidence_lookup", {"transaction_found": txn is not None, "atm_event_count": len(events)})
+    log.info("case=%s transaction_found=%s atm_event_count=%d", state["case_id"], txn is not None, len(events))
     return {"transaction_record": txn, "atm_events": events}
 
 def apply_rules(state: InvestigationState) -> dict:
@@ -67,6 +81,7 @@ def apply_rules(state: InvestigationState) -> dict:
         findings.append("One or more components reported an error; manual review is required.")
         requires_review = True
     _event(state, "rules", "deterministic_checks_completed", {"finding_count": len(findings), "requires_human_review": True})
+    log.info("case=%s rule_findings=%d", state["case_id"], len(findings))
     return {"findings": findings, "requires_human_review": True}
 
 def draft_recommendation(state: InvestigationState) -> dict:
@@ -105,9 +120,11 @@ def draft_recommendation(state: InvestigationState) -> dict:
         recommendation["requires_human_review"] = True
         recommendation["generation_mode"] = "local_llm"
         _event(state, "llm", "recommendation_drafted", {"mode": "local_llm", "citation_count": len(recommendation["evidence_citations"])})
+        log.info("case=%s recommendation_drafted mode=local_llm citations=%d", state["case_id"], len(recommendation["evidence_citations"]))
         return {"recommendation": recommendation}
     except Exception as exc:
         message = f"Local LLM drafting unavailable or invalid: {type(exc).__name__}: {exc}"
+        log.warning("case=%s %s", state["case_id"], message)
         fallback = {
             "case_summary": "A recommendation could not be drafted by the local LLM. Review the evidence below manually.",
             "findings": state.get("findings", []),
@@ -123,6 +140,7 @@ def draft_recommendation(state: InvestigationState) -> dict:
 def human_review(state: InvestigationState) -> dict:
     # Keep pre-interrupt side effects idempotent; this node resumes from its interrupt.
     update_case(state["case_id"], status="awaiting_review", result_json=_result_for_db(state))
+    log.info("case=%s status=awaiting_review", state["case_id"])
     decision = interrupt({
         "case_id": state["case_id"],
         "message": "Review the recommendation. Choose approve, reject, edit or escalate.",
@@ -132,6 +150,7 @@ def human_review(state: InvestigationState) -> dict:
     })
     if not isinstance(decision, dict) or decision.get("decision") not in {"approve", "reject", "edit", "escalate"}:
         decision = {"decision": "escalate", "reviewer_note": "Invalid review input; escalated safely."}
+    log.info("case=%s review_decision=%s", state["case_id"], decision.get("decision"))
     return {"review_decision": decision, "case_status": decision["decision"]}
 
 def _result_for_db(state: InvestigationState) -> dict:
@@ -159,6 +178,7 @@ def finalize_case(state: InvestigationState) -> dict:
     result["review_decision"] = decision
     update_case(state["case_id"], status=db_status, result_json=result)
     _event(state, "review", "human_decision_recorded", {"decision": decision_name, "status": db_status})
+    log.info("case=%s finalized status=%s", state["case_id"], db_status)
     return {"case_status": db_status}
 
 def _compile_graph(checkpointer):

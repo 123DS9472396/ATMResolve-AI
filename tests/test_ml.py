@@ -13,7 +13,7 @@ def test_train_predict_evaluate_round_trip(tmp_path):
         {"text": "bank transfer was declined", "label": "transfer_failed"},
         {"text": "my bank transfer did not go through", "label": "transfer_failed"},
         {"text": "cash withdrawal failed at ATM again", "label": "cash_withdrawal"},
-        {"text": "transfer payment is being declined", "label": "transfer_failed"},
+        {"text": "transfer payment is being declining", "label": "transfer_failed"},
     ]
     pd.DataFrame(rows).to_csv(train_path, index=False)
     pd.DataFrame(rows).to_csv(test_path, index=False)
@@ -38,3 +38,30 @@ def test_training_rejects_missing_columns(tmp_path):
         assert "text,label" in str(error)
     else:
         raise AssertionError("Expected invalid dataset schema to fail")
+
+
+def test_predict_intent_returns_calibrated_flag(tmp_path):
+    """predict_intent() must always return a 'confidence_is_calibrated' key.
+
+    The graph reads this key to propagate the flag into case_event logs;
+    it must be present and be a bool on any trained model — calibrated or not.
+    """
+    train_path = tmp_path / "train.csv"
+    rows = [
+        {"text": "cash not dispensed but account debited", "label": "cash_not_dispensed"},
+        {"text": "ATM swallowed my card", "label": "card_retained"},
+        {"text": "cash not dispensed and no receipt", "label": "cash_not_dispensed"},
+        {"text": "card was kept by ATM machine", "label": "card_retained"},
+    ]
+    pd.DataFrame(rows).to_csv(train_path, index=False)
+    out_dir = tmp_path / "artifacts"
+    # train_model produces an uncalibrated pipeline (no CalibratedClassifierCV)
+    train_model(train_path, train_path, out_dir)
+    result = predict_intent("ATM did not give cash", out_dir / "intent_classifier.joblib")
+    assert "confidence_is_calibrated" in result, (
+        "predict_intent() must return 'confidence_is_calibrated' for graph logging"
+    )
+    assert isinstance(result["confidence_is_calibrated"], bool)
+    # A plain train_model() pipeline has no _atmresolve_calibrated attr,
+    # so the flag should be False.
+    assert result["confidence_is_calibrated"] is False

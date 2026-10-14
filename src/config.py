@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -19,3 +20,11 @@ VECTOR_DB_PATH = _path_env("VECTOR_DB_PATH", "data/chroma")
 ML_MODEL_PATH = _path_env("ML_MODEL_PATH", "artifacts/ml/intent_classifier.joblib")
 ML_CONFIDENCE_THRESHOLD = float(os.getenv("ML_CONFIDENCE_THRESHOLD", "0.35"))
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+
+LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO").upper()
+
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S",
+)
